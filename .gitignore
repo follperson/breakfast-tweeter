@@ -1,0 +1,4 @@
+config.py
+Thumbs.db
+.idea/*
+__pycache__/
