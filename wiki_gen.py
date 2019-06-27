@@ -1,6 +1,7 @@
-import wikipedia as wk
+# import wikipedia as wk
 import markovify as mk
 import time
+# from requests.exceptions import ConnectionError
 exclude_flag = ['List ','National Register of Historic']
 exclude_flag += [str(i) for i in range(1000,2018)]
 par_delim = ' -- '
@@ -9,7 +10,10 @@ par_delim = ' -- '
 def get_wikipedia_summary(num_articles=10):
     data = []
     for i in range(int(num_articles / 10)):
-        page_titles = wk.random(10)
+        try:
+            page_titles = wk.random(10)
+        except ConnectionError:
+            time.sleep(60)
         for title in page_titles:
             summary = get_summary_from_search_term(title,exclude_flag)
             if summary is not None:
@@ -36,11 +40,15 @@ def write_to_file(data,fp):
         stash.write('\n'.join(data).encode())
 
 
-def read_corpus(fp):
-    with open(fp, 'rb') as docs:
-        data = docs.readlines()
-        decoded = [line.decode('utf8').replace(par_delim, '').replace('=','') for line in data]
-        decoded = list(set(decoded))
+def read_corpus(fp,decode=True):
+    if decode:
+        with open(fp, 'rb') as docs:
+            data = docs.readlines()
+            decoded = [line.decode('utf8').replace(par_delim, '').replace('=','') for line in data]
+    else:
+        with open(fp, 'r') as docs:
+            decoded = docs.readlines()
+    decoded = list(set(decoded))
     return decoded
 
 
@@ -54,16 +62,19 @@ def load_model(fp):
             print(message)
 
 
-def get_tweet(fp, live=False, size=280):
+def get_tweet(fp, live=False, size=280, chain_size=3,decode=True):
     if live:
         decoded = get_wikipedia_summary(200)
     else:
-        decoded = read_corpus(fp)
-    text_model = mk.NewlineText('\n'.join(decoded))
+        decoded = read_corpus(fp,decode=decode)
+    text_model = mk.NewlineText('\n'.join(decoded), chain_size)  # 5 is pretty accurate but wrongo
     print('_'*100)
+    attempts = 0
     for i in range(20):
-        message= text_model.make_short_sentence(size)
+        attempts += 1
+        message = text_model.make_short_sentence(size)
         if message is not None:
+            print('Took %s tries to get message' % attempts)
             return message
 
 ############ MAIN #############

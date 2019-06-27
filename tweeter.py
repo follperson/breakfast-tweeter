@@ -2,9 +2,8 @@
 import tweepy
 import time
 import sys
-# import markoviy
 import datetime
-from brekky import write_breakfast
+# from brekky import write_breakfast
 from config import key, secret, token_key, token_secret
 from wiki_gen import get_tweet
 
@@ -24,21 +23,40 @@ class TwitterObj(object):
 def general_wiki_summary(size=280):
     tweet_from_file('corpus\\corpus.txt',size)
 
-def tweet_from_file(fp,size=280):
+def tweet_from_file(fp,size=280,leng=999,chain_size=3,decode=True):
+    print(fp)
     twitter_api = TwitterObj()
     run = 1
-    while True:
-        message = get_tweet(fp,False,size)
-        print('Run %s' % run)
-        print(message)
-        twitter_api.tweet(message)
-        run += 1
-        time.sleep(60*30)
+    while run < leng:
+        message = get_tweet(fp, False, size, chain_size,decode)
+        if message is not None:
+            if len(message) > 279:
+                continue
+            print('Run %s' % run)
+            print(message)
+            try:
+                twitter_api.tweet(message)
+            except tweepy.error.TweepError as e:
+                print('error', str(e))
+            run += 1
+            time.sleep(60*30)
 
 
 def breakfast_tweet():
     tweet_from_file('corpus\\breakfast\\breakfast.txt')
 
+
+def allrecipes_all():
+    while True:
+        print('descriptioin')
+        tweet_from_file('corpus\\breakfast\\description - article level.txt',leng=2,size=160,chain_size=5,decode=False)
+        print('directions line')
+        tweet_from_file('corpus\\breakfast\\directions_cleaned - line level.txt',leng=2,size=160,chain_size=5,decode=False)
+        print('directions article')
+        tweet_from_file('corpus\\breakfast\\directions_cleaned - article level.txt',leng=2,size=160,chain_size=3,decode=False)
+
+
 if __name__ == "__main__":
     # breakfast_tweet()
-    general_wiki_summary()
+    # general_wiki_summary()
+    allrecipes_all()
