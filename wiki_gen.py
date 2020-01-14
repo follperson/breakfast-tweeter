@@ -1,7 +1,7 @@
-# import wikipedia as wk
-import markovify as mk
+# This file houses functions to create a corpus of wikipedia summaries
+import wikipedia as wk
 import time
-# from requests.exceptions import ConnectionError
+
 exclude_flag = ['List ','National Register of Historic']
 exclude_flag += [str(i) for i in range(1000,2018)]
 par_delim = ' -- '
@@ -40,42 +40,7 @@ def write_to_file(data,fp):
         stash.write('\n'.join(data).encode())
 
 
-def read_corpus(fp,decode=True):
-    if decode:
-        with open(fp, 'rb') as docs:
-            data = docs.readlines()
-            decoded = [line.decode('utf8').replace(par_delim, '').replace('=','') for line in data]
-    else:
-        with open(fp, 'r') as docs:
-            decoded = docs.readlines()
-    decoded = list(set(decoded))
-    return decoded
 
-
-def load_model(fp):
-    decoded = read_corpus(fp)
-    text_model = mk.NewlineText('\n'.join(decoded))
-    print('_'*100)
-    for i in range(20):
-        message = text_model.make_short_sentence(280)
-        if message is not None:
-            print(message)
-
-
-def get_tweet(fp, live=False, size=280, chain_size=3,decode=True):
-    if live:
-        decoded = get_wikipedia_summary(200)
-    else:
-        decoded = read_corpus(fp,decode=decode)
-    text_model = mk.NewlineText('\n'.join(decoded), chain_size)  # 5 is pretty accurate but wrongo
-    print('_'*100)
-    attempts = 0
-    for i in range(20):
-        attempts += 1
-        message = text_model.make_short_sentence(size)
-        if message is not None:
-            print('Took %s tries to get message' % attempts)
-            return message
 
 ############ MAIN #############
 

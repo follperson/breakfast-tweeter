@@ -1,3 +1,4 @@
+# Original breakfast corpus generator. Used to create the corpus\\breakfast\\breakfast.txt corpus
 import bs4
 import urllib3
 import requests
