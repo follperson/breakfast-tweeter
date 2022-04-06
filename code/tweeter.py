@@ -70,9 +70,9 @@ def read_corpus(fp,decode=True):
     :return:
     """
     if decode:
-        with open(fp, 'rb') as docs:
+        with open(fp, 'r',encoding='utf8') as docs:
             data = docs.readlines()
-            decoded = [line.decode('utf8').replace(par_delim, '').replace('=', '') for line in data]
+            decoded = [line.replace(par_delim, '').replace('=', '') for line in data]
     else:
         with open(fp, 'r') as docs:
             decoded = docs.readlines()
